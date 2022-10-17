@@ -22,10 +22,21 @@ class StripeOAuth2(BaseOAuth2):
         ('stripe_user_id', 'stripe_user_id'),
     ]
 
+    def user_data(self, access_token, *args, **kwargs):
+        """Grab user profile information from Stripe"""
+        return self.get_json(
+            'https://api.stripe.com/v1/account',
+            headers={
+                'Authorization': f'Bearer {access_token}',
+            },
+        )
+
     def get_user_details(self, response):
         """Return user details from Stripe account"""
-        return {'username': response.get('stripe_user_id'),
-                'email': ''}
+        return {
+            'username': response.get('stripe_user_id'),
+            'email': response.get('email'),
+        }
 
     def auth_complete_params(self, state=None):
         client_id, client_secret = self.get_key_and_secret()
